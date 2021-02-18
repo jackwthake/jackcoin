@@ -1,4 +1,5 @@
 #include <iostream>
+#include "blockchain/block.h"
 
 /*
  * What we need:
@@ -16,5 +17,12 @@
 */
 
 int main(int argc, char **argv) {
+  uint8_t hash[32];
+  memset(hash, 0x00, sizeof(uint8_t[32]));
+
+  Block::Transaction tr = {"hello", "world", 35};
+  Block block(tr, 100);
+
+  block.hash_block(hash);
   return EXIT_SUCCESS;
 }

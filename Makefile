@@ -2,7 +2,7 @@ CC=g++
 CFLAGS=-std=c++11 -Wall -g
 EXE_NAME=hello_world
 
-build: bin bin/main.o bin/hash_utils.o bin/sha-256.o
+build: bin bin/main.o bin/hash_utils.o bin/sha-256.o bin/block.o
 	$(CC) $(CFLAGS) bin/*.o -o bin/$(EXE_NAME)
 
 bin/main.o: src/main.cpp
@@ -10,6 +10,9 @@ bin/main.o: src/main.cpp
 
 bin/hash_utils.o: src/crypto/hash_utils.cpp
 	$(CC) $(CFLAGS) -c src/crypto/hash_utils.cpp -o $@
+
+bin/block.o: src/blockchain/block.cpp
+	$(CC) $(CFLAGS) -c src/blockchain/block.cpp -o $@
 
 bin/sha-256.o: src/crypto/sha-256.c
 	gcc -c src/crypto/sha-256.c -o $@
