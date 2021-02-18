@@ -48,7 +48,7 @@ Block::Block(Transaction &data, uint64_t timestamp) {
  *  chain becuase we're including the previous block's hash in the class's 
  *  data
 */
-void Block::hash_block(uint8_t previous_hash[32]) {
+void Block::hash_block(const uint8_t previous_hash[32]) {
   memcpy(this->previous_hash, previous_hash, sizeof(uint8_t[32]));
   calc_sha_256(this->hash, this, sizeof this);
 }

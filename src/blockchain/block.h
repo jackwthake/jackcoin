@@ -21,7 +21,7 @@ public:
   Block(Transaction &data, uint64_t timestamp);
 
   /* hash the current block, with respect to the previous block. */
-  void hash_block(uint8_t previous_hash[32]);
+  void hash_block(const uint8_t previous_hash[32]);
 
   /* get the hash of this block */
   const uint8_t *get_hash() const;
