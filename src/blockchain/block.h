@@ -25,6 +25,7 @@ public:
 
   /* get the hash of this block */
   const uint8_t *get_hash() const;
+  void operator=(const Block &src);
 private:
   uint64_t timestamp;
   uint8_t hash[32], previous_hash[32];

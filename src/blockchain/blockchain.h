@@ -18,6 +18,7 @@ public:
    * this is because each blocks hash is based on the previous blocks hash
   */
   void add_block(Block &to_add);
+  inline const Block get_latest_block(void) const { return this->head ?  this->head.data : Block(); }
 private:
   struct node {
     Block data;

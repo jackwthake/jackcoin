@@ -6,6 +6,7 @@ extern "C" {
   #include "../crypto/sha-256.h"
 }
 
+
 /*
  * copy one transaction into another
 */
@@ -42,6 +43,7 @@ Block::Block(Transaction &data, uint64_t timestamp) {
   memset(this->previous_hash, 0x00, sizeof this->previous_hash);
 }
 
+
 /*
  *  hash the current block, with respect to the previous block. 
  *  just hash entire contents of the class, this will hold integrity in the
@@ -50,5 +52,17 @@ Block::Block(Transaction &data, uint64_t timestamp) {
 */
 void Block::hash_block(const uint8_t previous_hash[32]) {
   memcpy(this->previous_hash, previous_hash, sizeof(uint8_t[32]));
-  calc_sha_256(this->hash, this, sizeof this);
+  calc_sha_256(this->hash, this, sizeof this); /* just hash the entire class :O nice and simple */
+}
+
+
+/*
+ * Copy one block to another
+*/
+void Block::operator=(const Block &src) {
+  memcpy(this->hash, src.hash, sizeof(uint8_t[32]));
+  memcpy(this->previous_hash, src.previous_hash, sizeof(uint8_t[32]));
+
+  copy_transaction(this->data, src.data);
+  this->timestamp = src.timestamp;
 }
