@@ -17,12 +17,15 @@
 */
 
 int main(int argc, char **argv) {
-  uint8_t hash[32];
-  memset(hash, 0x00, sizeof(uint8_t[32]));
+  Transaction tr("from", "to", 5);
+  std::cout << tr.operator std::__1::string() << std::endl << std::endl;
 
-  Block::Transaction tr = {"hello", "world", 35};
-  Block block(tr, 100);
-
-  block.hash_block(hash);
-  return EXIT_SUCCESS;
+  Block blk(5);
+  blk.add_transaction(tr);
+  std::cout << "Block string representation before hashing: " << blk.operator std::__1::string() << std::endl;
+  blk.hash_block("hash");
+  std::cout << "BLock string representation after hashing:  " << blk.operator std::__1::string() << std::endl;
+  std::cout << std::endl << "Block Hash: " << blk.get_hash() << std::endl;
+  std::cout << std::endl << "Previous Block Hash: " << blk.get_previous_hash() << std::endl;
+  std::cout << std::endl << "Block transaction Hash: " << blk.get_transaction_hash() << std::endl;
 }

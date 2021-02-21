@@ -1,68 +1,148 @@
 #include "block.h"
 
-#include <cstring>
+#include <SHA256.h>
+#include <ctime>
 
-extern "C" {
-  #include "../crypto/sha-256.h"
+/*******************
+ * Transaction class
+*******************/
+
+/* constructors */
+Transaction::Transaction() : Transaction(nullptr, nullptr, 0) {}
+Transaction::Transaction(char from_addr[33], char to_addr[33], uint64_t amount) {
+  /* copy over send and recieve addresses */
+  if (from_addr)
+    strcpy(this->from_addr, from_addr);
+  else
+    memset(this->from_addr, 0x00, sizeof(char[33]));
+  
+  if (to_addr)
+    strcpy(this->to_addr, to_addr);
+  else
+    memset(this->to_addr, 0x00, sizeof(char[33]));
+  
+  this->amount = amount;
+  this->timestamp = time(NULL);
+}
+
+
+/* 
+ * sign the transaction with the senders public key, 
+ * ensuring you can only send from your own wallet
+*/
+void Transaction::sign(char signing_key[33]) {
+  // TODO: Implement me
 }
 
 
 /*
- * copy one transaction into another
+ * check if a transaction is valid, based on its send and
+ *  recieve address, amount and internal hash.
 */
-static void copy_transaction(Block::Transaction &dest, const Block::Transaction &src) {
-  strcpy(dest.sender, src.sender);
-  strcpy(dest.reciever, src.reciever);
-
-  dest.amount = src.amount;
+bool Transaction::is_valid(void) {
+  /* 
+   * we only check the recieving address, because if the sender is NULL then 
+   * it's assumed the transaction is a mining reward.
+  */
+  if (strcmp(this->to_addr, "") == 0 || amount <= 0)
+    return false;
+  
+  return true;
 }
 
 
-/*
- * default constructor
- * not going to be used implicitly by me, 
- * but for initialising the LLL in the blockchain itself
-*/
-Block::Block(void) {
-  this->timestamp = 0;
+/* convert a transaction to a string, for hashing */
+Transaction::operator std::__1::string() const {
+  std::string tr;
+  
+  tr.append(this->from_addr, strlen(this->from_addr));
+  tr.append(this->to_addr, strlen(this->to_addr));
 
-  memset(&this->data, 0x00, sizeof this->data);
-  memset(this->hash, 0x00, sizeof this->hash);
-  memset(this->previous_hash, 0x00, sizeof this->previous_hash);
+  tr.append(std::to_string(this->timestamp));
+  tr.append(std::to_string(this->amount));
+
+  return tr;
 }
 
 
-/*
- * create a populated block
-*/
-Block::Block(Transaction &data, uint64_t timestamp) {
-  copy_transaction(this->data, data);
-  this->timestamp = timestamp;
 
-  memset(this->hash, 0x00, sizeof this->hash);
-  memset(this->previous_hash, 0x00, sizeof this->previous_hash);
+/*******************
+ * Transaction Class
+*******************/
+
+/* Block constructors */
+Block::Block(void) : Block(0) {}
+Block::Block(uint64_t nonce) {
+  /* allocate hash strings */
+  this->block_hash = new char[Block::hash_length];
+  this->previous_hash = new char[Block::hash_length];
+  this->transaction_hash = new char[Block::hash_length];
+
+  /* zero out hash strings */
+  memset(this->block_hash, 0x00, Block::hash_length);
+  memset(this->previous_hash, 0x00, Block::hash_length);
+  memset(this->transaction_hash, 0x00, Block::hash_length);
+
+  this->nonce = nonce;
+  this->timestamp = time(NULL);
+  this->transactions.clear();
 }
 
 
-/*
- *  hash the current block, with respect to the previous block. 
- *  just hash entire contents of the class, this will hold integrity in the
- *  chain becuase we're including the previous block's hash in the class's 
- *  data
-*/
-void Block::hash_block(const uint8_t previous_hash[32]) {
-  memcpy(this->previous_hash, previous_hash, sizeof(uint8_t[32]));
-  calc_sha_256(this->hash, this, sizeof this); /* just hash the entire class :O nice and simple */
+/* deallocates strings */
+Block::~Block(void) {
+  delete []this->block_hash;
+  delete []this->previous_hash;
+  delete []this->transaction_hash;
 }
 
 
-/*
- * Copy one block to another
-*/
-void Block::operator=(const Block &src) {
-  memcpy(this->hash, src.hash, sizeof(uint8_t[32]));
-  memcpy(this->previous_hash, src.previous_hash, sizeof(uint8_t[32]));
+/* add a transaction to the blocks list, if the passed transaction is valid */
+bool Block::add_transaction(Transaction &tr) {
+  if (!tr.is_valid())
+    return false;
 
-  copy_transaction(this->data, src.data);
-  this->timestamp = src.timestamp;
+  this->transactions.push_front(tr);
+  return true;
+}
+
+
+/* hash the block using the previous hash to preserve integrity */
+bool Block::hash_block(char previous_hash[65]) {
+  if (!previous_hash)
+    return false;
+
+  SHA256 sha;
+  
+  memcpy(this->previous_hash, previous_hash, sizeof(char[65]));
+
+  /* TODO: Hash all transactions in a block properly */
+  sha.update("Transactions");
+  strcpy(this->transaction_hash, SHA256::toString(sha.digest()).c_str());
+
+  sha.update(*this);
+  strcpy(this->block_hash, SHA256::toString(sha.digest()).c_str());
+
+  return true;
+}
+
+
+/* verify the current block, true if verified. */
+bool Block::verify_block(void) {
+  // TODO: Implement me
+  return true;
+}
+
+
+/* convert a block to a string representation, used for hashing */
+Block::operator std::__1::string() const {
+  std::string blk;
+
+  blk.append(this->previous_hash, strlen(this->previous_hash));
+  blk.append(this->transaction_hash, strlen(this->transaction_hash));
+
+  blk.append(std::to_string(this->timestamp));
+  blk.append(std::to_string(this->nonce));
+
+  return blk;
 }
