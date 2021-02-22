@@ -28,4 +28,6 @@ int main(int argc, char **argv) {
   std::cout << std::endl << "Block Hash: " << blk.get_hash() << std::endl;
   std::cout << std::endl << "Previous Block Hash: " << blk.get_previous_hash() << std::endl;
   std::cout << std::endl << "Block transaction Hash: " << blk.get_transaction_hash() << std::endl;
+  std::cout << (blk.verify_block() ? "Block Verified." : "Block not verified.") << std::endl;
+  std::cout << std::endl;
 }

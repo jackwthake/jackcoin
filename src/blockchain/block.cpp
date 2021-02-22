@@ -2,6 +2,7 @@
 
 #include <SHA256.h>
 #include <ctime>
+#include <iostream>
 
 /*******************
  * Transaction class
@@ -112,16 +113,16 @@ bool Block::hash_block(char previous_hash[65]) {
   if (!previous_hash)
     return false;
 
-  SHA256 sha;
+  SHA256 transaction_sha, block_sha;
   
   memcpy(this->previous_hash, previous_hash, sizeof(char[65]));
 
   /* TODO: Hash all transactions in a block properly */
-  sha.update("Transactions");
-  strcpy(this->transaction_hash, SHA256::toString(sha.digest()).c_str());
+  transaction_sha.update("Transactions");
+  strcpy(this->transaction_hash, SHA256::toString(transaction_sha.digest()).c_str());
 
-  sha.update(*this);
-  strcpy(this->block_hash, SHA256::toString(sha.digest()).c_str());
+  block_sha.update(*this);
+  strcpy(this->block_hash, SHA256::toString(block_sha.digest()).c_str());
 
   return true;
 }
@@ -129,7 +130,12 @@ bool Block::hash_block(char previous_hash[65]) {
 
 /* verify the current block, true if verified. */
 bool Block::verify_block(void) {
-  // TODO: Implement me
+  SHA256 sha;
+  sha.update(*this);
+
+  if (strcmp(SHA256::toString(sha.digest()).c_str(), this->block_hash) != 0)
+    return false;
+
   return true;
 }
 
